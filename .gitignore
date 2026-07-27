@@ -1,0 +1,17 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.log
+*.db
+*.db-journal
+backups/
+.env
+.env.*
+.DS_Store
+*.crt
+*.key
+*.pem
+patch_candidates/
+sandbox/
+target_repo/

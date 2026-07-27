@@ -1,0 +1,6 @@
+google-generativeai
+langgraph
+langchain
+python-dotenv
+qdrant-client
+semgrep
