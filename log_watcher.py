@@ -272,12 +272,20 @@ def watch_log_stream():
                         waf.write(f"{log_line}\n")
 
                     # AIエージェントをバックグラウンドで起動
-                    cmd = (
-                        f"cd {AGENT_DIR} && PYTHONUNBUFFERED=1 "
-                        f"{venv_python} -u {agent_script} {web_attack_log} "
-                        f">> {agent_log} 2>> {agent_err} &"
-                    )
-                    subprocess.Popen(cmd, shell=True, cwd=AGENT_DIR)
+                    # 2026-07-29: shell=True + f-string文字列結合はコマンドインジェクションの
+                    # リスクパターンであるため、list形式のsubprocess.Popenに変更(auto_patcher.py
+                    # 自体がこのパターンを脆弱性として検出対象にしているのと一貫性を取るため)
+                    _agent_env = dict(os.environ)
+                    _agent_env["PYTHONUNBUFFERED"] = "1"
+                    with open(agent_log, "ab") as _agent_out, open(agent_err, "ab") as _agent_err:
+                        subprocess.Popen(
+                            [venv_python, "-u", agent_script, web_attack_log],
+                            cwd=AGENT_DIR,
+                            env=_agent_env,
+                            stdout=_agent_out,
+                            stderr=_agent_err,
+                            start_new_session=True,
+                        )
                     watcher_log(f"[AI] 🤖 AIエージェントを起動しました（攻撃者IP: {attacker_ip}:{attacker_port}）")
                 except Exception as e:
                     watcher_log(f"[AI] ⚠️ AIエージェント起動失敗: {e}")

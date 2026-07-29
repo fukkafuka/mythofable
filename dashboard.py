@@ -216,25 +216,32 @@ def get_chart_data():
 # ─────────────────────────────────────────
 @app.before_request
 def check_access():
-    """全ルートへのアクセスをBL/pfctlで一括チェック"""
+    """全ルートへのアクセスをBL/pfctlで一括チェック
+    2026-07-29: 従来は例外発生時に一律で許可(fail-open)していたが、
+    クライアントIP特定・ブラックリスト読み込みの失敗はセキュリティ判定の根幹に関わるため
+    fail-closed(拒否)に変更。pfctl側の一時的な失敗のみ、ブラックリストファイルによる
+    一次チェックで担保されているとみなし、従来通り許容する。"""
+    if request.path.startswith('/rescue'):
+        return None
     try:
-        if request.path.startswith('/rescue'):
-            return None
         client_ip = get_client_ip()
+    except Exception:
+        return render_template_string(BLOCKED_TEMPLATE, ip='unknown'), 403
+    try:
         if client_ip in read_file_lines(BLACKLIST_FILE):
             return render_template_string(BLOCKED_TEMPLATE, ip=client_ip), 403
-        try:
-            r = subprocess.run(["/usr/bin/sudo", "/sbin/pfctl", "-a", "mythofable",
-                               "-t", "mythofable_block", "-T", "show"],
-                              capture_output=True, text=True, timeout=5)
-            pf_block_ips = [l.strip() for l in r.stdout.splitlines() if l.strip()]
-            if client_ip in pf_block_ips:
-                return render_template_string(BLOCKED_TEMPLATE, ip=client_ip), 403
-        except Exception:
-            pass
-        return None
     except Exception:
-        return None
+        return render_template_string(BLOCKED_TEMPLATE, ip=client_ip), 403
+    try:
+        r = subprocess.run(["/usr/bin/sudo", "/sbin/pfctl", "-a", "mythofable",
+                           "-t", "mythofable_block", "-T", "show"],
+                          capture_output=True, text=True, timeout=5)
+        pf_block_ips = [l.strip() for l in r.stdout.splitlines() if l.strip()]
+        if client_ip in pf_block_ips:
+            return render_template_string(BLOCKED_TEMPLATE, ip=client_ip), 403
+    except Exception:
+        pass
+    return None
 
 @app.after_request
 def add_headers(response):
