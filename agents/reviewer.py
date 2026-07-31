@@ -54,7 +54,7 @@ def _review_groq(plan_text: str) -> str:
     prompt = f"{REVIEWER_SYSTEM_PROMPT}\n\nPlease review:\n\n{plan_text}"
     try:
         res = requests.post(url, headers=headers, json={
-            "model": "llama-3.3-70b-versatile",
+            "model": "openai/gpt-oss-120b",  # 2026-08-01: llama-3.3-70b-versatile廃止(2026-08-16)のため移行
             "messages": [{"role": "user", "content": prompt}],
             "temperature": 0.1,
         }, timeout=30)
@@ -78,9 +78,7 @@ def _review_openrouter(plan_text: str) -> str:
     }
     prompt = f"{REVIEWER_SYSTEM_PROMPT}\n\nPlease review:\n\n{plan_text}"
     models = [
-        "meta-llama/llama-3.3-70b-instruct:free",
         "minimax/minimax-m2.5:free",
-        "openai/gpt-oss-120b:free",
         "google/gemma-3-27b-it:free",
     ]
     for model in models:

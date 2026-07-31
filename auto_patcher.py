@@ -145,7 +145,7 @@ def generate_patch_opencode(filepath, findings, timeout=90):
         env = os.environ.copy()
 
         result = subprocess.run(
-            ["opencode", "run", "--model", "openrouter/openai/gpt-oss-120b:free", prompt],
+            ["opencode", "run", "--model", "openrouter/openai/gpt-oss-20b:free", prompt],  # 2026-08-01: gpt-oss-120b:freeは廃止済みのため20bに変更
             cwd=sandbox_dir,
             env=env,
             capture_output=True,
@@ -248,7 +248,7 @@ def _get_test_from_llm(prompt):
                 "https://api.groq.com/openai/v1/chat/completions",
                 headers={"Authorization": f"Bearer {groq_key}",
                          "Content-Type": "application/json"},
-                json={"model": "llama-3.3-70b-versatile",
+                json={"model": "openai/gpt-oss-120b",  # 2026-08-01: llama-3.3-70b-versatile廃止(2026-08-16)のため移行
                       "messages": [{"role": "user", "content": prompt}],
                       "temperature": 0.1},
                 timeout=30

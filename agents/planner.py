@@ -109,7 +109,7 @@ def planner_groq(context: str) -> dict:
     try:
         for attempt in range(2):
             res = requests.post(url, headers=headers, json={
-                "model": "llama-3.3-70b-versatile",
+                "model": "openai/gpt-oss-120b",  # 2026-08-01: llama-3.3-70b-versatile廃止(2026-08-16)のため移行
                 "messages": [{"role": "user", "content": prompt}],
                 "temperature": 0.2,
                 "response_format": {"type": "json_object"}
@@ -142,8 +142,6 @@ def planner_openrouter(context: str) -> dict:
     }
     # Moltbookエージェントで稼働確認済みのモデル
     models = [
-        "meta-llama/llama-3.3-70b-instruct:free",
-        "openai/gpt-oss-120b:free",
         "nousresearch/hermes-3-llama-3.1-405b:free",
         "qwen/qwen3-235b-a22b:free",
         "microsoft/mai-ds-r1:free",
@@ -219,7 +217,7 @@ def call_llm_chain(full_prompt: str) -> dict:
                     "https://api.groq.com/openai/v1/chat/completions",
                     headers={"Authorization": f"Bearer {groq_key}",
                              "Content-Type": "application/json"},
-                    json={"model": "llama-3.3-70b-versatile",
+                    json={"model": "openai/gpt-oss-120b",  # 2026-08-01: llama-3.3-70b-versatile廃止(2026-08-16)のため移行
                           "messages": [{"role": "user", "content": full_prompt}],
                           "temperature": 0.2,
                           "response_format": {"type": "json_object"}},
@@ -243,8 +241,6 @@ def call_llm_chain(full_prompt: str) -> dict:
     or_key = os.getenv("OPENROUTER_API_KEY")
     if or_key:
         or_models = [
-            "meta-llama/llama-3.3-70b-instruct:free",
-            "openai/gpt-oss-120b:free",
             "nousresearch/hermes-3-llama-3.1-405b:free",
             "qwen/qwen3-235b-a22b:free",
             "microsoft/mai-ds-r1:free",
