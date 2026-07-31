@@ -52,6 +52,14 @@ HANDOVER.md, MYTHOFABLE_MIGRATION.md                  # 移行・引き継ぎ資
 - `*.db`(`memory.db`等)
 - `backups/`, `patch_candidates/`, `sandbox/`, `target_repo/`
 
+## テスト
+
+セキュリティロジック(深刻度判定・HMACトークン)の回帰テストがある。実行には`dashboard.py`がimportできる仮想環境(`flask`等の依存関係)が必要。
+
+```bash
+cd ~/MythoFable && FLASK_SECRET=dummy .venv/bin/python3 test_security_logic.py
+```
+
 ## 運用上の注意
 
 - 通信は必ずTailscale経由のHTTPSに限定する(pfctlでTailscale以外からのアクセスをブロック済み)
