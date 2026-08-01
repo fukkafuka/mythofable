@@ -3,6 +3,7 @@ import requests
 from google import genai
 from google.genai import types
 from dotenv import load_dotenv
+from model_status import filter_alive_models
 
 load_dotenv(os.path.expanduser("~/.config/ai-keys/.env"))
 load_dotenv(os.path.expanduser("~/gemini_mythos_m/.env"))
@@ -77,10 +78,10 @@ def _review_openrouter(plan_text: str) -> str:
         "X-Title": "MythoFable",
     }
     prompt = f"{REVIEWER_SYSTEM_PROMPT}\n\nPlease review:\n\n{plan_text}"
-    models = [
+    models = filter_alive_models([
         "minimax/minimax-m2.5:free",
         "google/gemma-3-27b-it:free",
-    ]
+    ], provider="openrouter")
     for model in models:
         try:
             res = requests.post(url, headers=headers, json={

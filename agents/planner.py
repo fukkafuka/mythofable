@@ -6,6 +6,7 @@ import requests
 from google import genai
 from google.genai import types
 from dotenv import load_dotenv
+from model_status import filter_alive_models
 
 from tools.file_reader import read_specific_file
 from tools.file_lister import list_project_files
@@ -141,11 +142,11 @@ def planner_openrouter(context: str) -> dict:
         "X-Title": "MythoFable",
     }
     # Moltbookエージェントで稼働確認済みのモデル
-    models = [
+    models = filter_alive_models([
         "nousresearch/hermes-3-llama-3.1-405b:free",
         "qwen/qwen3-235b-a22b:free",
         "microsoft/mai-ds-r1:free",
-    ]
+    ], provider="openrouter")
     for model in models:
         try:
             res = requests.post(url, headers=headers, json={
@@ -240,11 +241,11 @@ def call_llm_chain(full_prompt: str) -> dict:
     # OpenRouter
     or_key = os.getenv("OPENROUTER_API_KEY")
     if or_key:
-        or_models = [
+        or_models = filter_alive_models([
             "nousresearch/hermes-3-llama-3.1-405b:free",
             "qwen/qwen3-235b-a22b:free",
             "microsoft/mai-ds-r1:free",
-        ]
+        ], provider="openrouter")
         for model in or_models:
             try:
                 res = requests.post(
