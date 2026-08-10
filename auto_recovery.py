@@ -4,6 +4,7 @@ auto_recovery.py - false_positive判定IPの自動解除
 cron: */5 * * * * ~/MythoFable/.venv/bin/python3 ~/MythoFable/auto_recovery.py
 """
 import os, json, subprocess, datetime
+import sys
 
 BASE_DIR       = os.path.expanduser("~/MythoFable")
 REPORTS_FILE   = os.path.join(BASE_DIR, "agent_reports.jsonl")
@@ -11,7 +12,17 @@ BLACKLIST_FILE = os.path.join(BASE_DIR, "blocked_ips.txt")
 WATCHER_LOG    = "/Users/fk/Logs/watcher_stdout.log"
 PF_TABLE_NAME  = "mythofable_block"
 
+_SANITIZER_PATH = os.path.expanduser("~/.config/ai-keys")
+if _SANITIZER_PATH not in sys.path:
+    sys.path.insert(0, _SANITIZER_PATH)
+try:
+    from secret_sanitizer import sanitize_secrets as _sanitize_secrets
+except Exception:
+    def _sanitize_secrets(text):
+        return text
+
 def log(msg):
+    msg = _sanitize_secrets(str(msg))
     now = datetime.datetime.now().strftime("%H:%M:%S")
     with open(WATCHER_LOG, "a", encoding="utf-8") as f:
         f.write(f"[{now}] {msg}\n")

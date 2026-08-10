@@ -22,7 +22,17 @@ PROD_FILES      = [
 
 os.makedirs(CANDIDATES_DIR, exist_ok=True)
 
+_SANITIZER_PATH = os.path.expanduser("~/.config/ai-keys")
+if _SANITIZER_PATH not in sys.path:
+    sys.path.insert(0, _SANITIZER_PATH)
+try:
+    from secret_sanitizer import sanitize_secrets as _sanitize_secrets
+except Exception:
+    def _sanitize_secrets(text):
+        return text
+
 def log(msg):
+    msg = _sanitize_secrets(str(msg))
     now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     with open(WATCHER_LOG, "a", encoding="utf-8") as f:
         f.write(f"[{now}] [PATCHER] {msg}\n")

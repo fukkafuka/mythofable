@@ -5,6 +5,7 @@ proxy_watcher.py - Tailscale経由トラフィック監視
 cron: */1 * * * * (1分ごとにtcpdumpを実行・解析)
 """
 import os, re, subprocess, datetime, json, ipaddress, socket
+import sys
 
 BASE_DIR    = os.path.expanduser("~/MythoFable")
 PROXY_LOG   = "/Users/fk/Logs/proxy.log"
@@ -32,7 +33,17 @@ SUSPICIOUS_PORTS = {
 # 許可ポート（通常のインターネット通信）
 ALLOWED_PORTS = {80, 443, 53, 123, 5000}
 
+_SANITIZER_PATH = os.path.expanduser("~/.config/ai-keys")
+if _SANITIZER_PATH not in sys.path:
+    sys.path.insert(0, _SANITIZER_PATH)
+try:
+    from secret_sanitizer import sanitize_secrets as _sanitize_secrets
+except Exception:
+    def _sanitize_secrets(text):
+        return text
+
 def log(msg):
+    msg = _sanitize_secrets(str(msg))
     now = datetime.datetime.now().strftime("%H:%M:%S")
     with open(WATCHER_LOG, "a", encoding="utf-8") as f:
         f.write(f"[{now}] [PROXY] {msg}\n")

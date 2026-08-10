@@ -27,7 +27,17 @@ MAX_REPORTS = 500
 # ─────────────────────────────────────────
 # ユーティリティ
 # ─────────────────────────────────────────
+_SANITIZER_PATH = os.path.expanduser("~/.config/ai-keys")
+if _SANITIZER_PATH not in sys.path:
+    sys.path.insert(0, _SANITIZER_PATH)
+try:
+    from secret_sanitizer import sanitize_secrets as _sanitize_secrets
+except Exception:
+    def _sanitize_secrets(text):
+        return text
+
 def log(msg):
+    msg = _sanitize_secrets(str(msg))
     now = datetime.datetime.now().strftime("%H:%M:%S")
     line = f"[{now}] [AGENT] {msg}"
     print(line)
