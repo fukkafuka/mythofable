@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-MythoFable セキュリティロジック 回帰テスト
+SecureGuard セキュリティロジック 回帰テスト
 - log_watcher.quick_severity() / extract_port(): 深刻度クイック判定
 - dashboard.make_token() / verify_token(): HMACトークンの発行・検証
 実行: FLASK_SECRET=dummy python3 test_security_logic.py

@@ -316,7 +316,7 @@ BLOCKED_TEMPLATE = """<!DOCTYPE html>
 DASHBOARD_TEMPLATE = """<!DOCTYPE html>
 <html>
 <head>
-    <title>MythoFable - 管理画面</title>
+    <title>SecureGuard - 管理画面</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
@@ -383,7 +383,7 @@ DASHBOARD_TEMPLATE = """<!DOCTYPE html>
     </style>
 </head>
 <body>
-    <h1>🔒 MythoFable 管理画面
+    <h1>🔒 SecureGuard 管理画面
         <a href="/health" target="_blank" class="health-link">📡 /health</a>
         <a href="/rescue" rel="noreferrer" class="health-link" style="border-color:#f44;color:#f44;">🚨 Rescue</a>
     </h1>
@@ -620,7 +620,7 @@ DASHBOARD_TEMPLATE = """<!DOCTYPE html>
 REPORTS_TEMPLATE = """<!DOCTYPE html>
 <html>
 <head>
-    <title>MythoFable - 統計 &amp; AIレポート</title>
+    <title>SecureGuard - 統計 &amp; AIレポート</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
@@ -823,7 +823,7 @@ REPORTS_TEMPLATE = """<!DOCTYPE html>
 PATCHES_TEMPLATE = """<!DOCTYPE html>
 <html>
 <head>
-    <title>MythoFable - パッチ候補</title>
+    <title>SecureGuard - パッチ候補</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
     <style>
@@ -903,7 +903,7 @@ PATCHES_TEMPLATE = """<!DOCTYPE html>
 TEST_PORT_TEMPLATE = """<!DOCTYPE html>
 <html>
 <head>
-    <title>MythoFable - ポートテスト</title>
+    <title>SecureGuard - ポートテスト</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
         body { background:#111; color:#ccc; font-family:monospace; padding:20px; max-width:800px; margin:0 auto; }
@@ -995,7 +995,7 @@ TEST_PORT_TEMPLATE = """<!DOCTYPE html>
 LOGS_TEMPLATE = """<!DOCTYPE html>
 <html>
 <head>
-    <title>MythoFable - ログ管理</title>
+    <title>SecureGuard - ログ管理</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
     <style>
@@ -1057,7 +1057,7 @@ LOGS_TEMPLATE = """<!DOCTYPE html>
 SERVICES_TEMPLATE = """<!DOCTYPE html>
 <html>
 <head>
-    <title>MythoFable - サービス管理</title>
+    <title>SecureGuard - サービス管理</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
     <style>
@@ -1126,7 +1126,7 @@ SERVICES_TEMPLATE = """<!DOCTYPE html>
 RESCUE_TEMPLATE = """<!DOCTYPE html>
 <html>
 <head>
-    <title>🚨 Rescue - MythoFable</title>
+    <title>🚨 Rescue - SecureGuard</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
     <script>

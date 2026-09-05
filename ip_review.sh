@@ -14,7 +14,7 @@ log() {
 }
 
 notify() {
-    osascript -e "display notification \"$1\" with title \"MythoFable IP Review\"" 2>/dev/null
+    osascript -e "display notification \"$1\" with title \"SecureGuard IP Review\"" 2>/dev/null
 }
 
 # ---------- pfctlテーブルのIP取得 ----------

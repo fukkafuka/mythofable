@@ -47,7 +47,7 @@ def move_ip(from_file, to_file, list_name_from, list_name_to):
 
 def main():
     print("====================================")
-    print(" 🛡️  MythoFable - IP アクセス管理ツール")
+    print(" 🛡️  SecureGuard - IP アクセス管理ツール")
     print("====================================")
     mode = input("👉 モードを選択してください [B: Blacklist管理 / W: Whitelist管理]: ").strip().upper()
     

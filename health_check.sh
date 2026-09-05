@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================================
-# health_check.sh — ① MythoFable 死活監視スクリプト
+# health_check.sh — ① SecureGuard 死活監視スクリプト
 #
 # 設定方法（別デバイスまたは同Macで cron に登録）:
 #   crontab -e

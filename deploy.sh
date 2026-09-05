@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================================
-# deploy.sh — MythoFable 更新版デプロイスクリプト
+# deploy.sh — SecureGuard 更新版デプロイスクリプト
 #
 # 実行方法:
 #   chmod +x ~/MythoFable/deploy.sh
@@ -13,7 +13,7 @@ DEPLOY_DIR="$HOME/MythoFable"
 UPDATE_DIR="$(dirname "$0")"  # このスクリプトと同じディレクトリ
 BACKUP_DIR="$DEPLOY_DIR/backups/pre_update_$(date +%Y%m%d_%H%M%S)"
 
-echo "=== MythoFable デプロイ開始 ==="
+echo "=== SecureGuard デプロイ開始 ==="
 echo ""
 
 # ────────────────────────────────────────

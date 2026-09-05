@@ -22,7 +22,7 @@ def extract_port(line):
     m = re.search(r':(\d{2,5})\s*-\s*-\s*\[', line)
     if m:
         return m.group(1)
-    return "5000"  # デフォルトはMythoFableのport
+    return "5000"  # デフォルトはSecureGuardのport
 
 # ─────────────────────────────────────────
 # 深刻度クイック判定（BL/pfctl判断用）

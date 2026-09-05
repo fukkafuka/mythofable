@@ -1,5 +1,5 @@
 """
-mythofable_s.py — MythoFable AIエージェント
+mythofable_s.py — SecureGuard AIエージェント
 
 ⑤ 自律ループ強化版
 - 攻撃ログを解析してパターンを分類
@@ -255,7 +255,7 @@ def analyze_and_report(attack_log_path):
 # エントリポイント
 # ─────────────────────────────────────────
 def main():
-    log("=== MythoFable AIエージェント 起動 ===")
+    log("=== SecureGuard AIエージェント 起動 ===")
 
     # コマンドライン引数: 攻撃ログパス
     attack_log = None

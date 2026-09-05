@@ -21,14 +21,14 @@ ANCHOR_NAME="mythofable"
 PF_ANCHOR_CONF="/etc/pf.anchors/mythofable"
 PLIST_PATH="/Library/LaunchDaemons/com.mythofable.pf.plist"
 
-echo "=== MythoFable pfctl table セットアップ ==="
+echo "=== SecureGuard pfctl table セットアップ ==="
 
 # ────────────────────────────────────────
 # 1. アンカーファイルを作成
 # ────────────────────────────────────────
 echo "[1/4] アンカーファイルを作成: $PF_ANCHOR_CONF"
 cat > "$PF_ANCHOR_CONF" <<ANCHOR
-# MythoFable — 攻撃者IPブロックテーブル
+# SecureGuard — 攻撃者IPブロックテーブル
 table <${TABLE_NAME}> persist
 block drop in quick from <${TABLE_NAME}> to any
 block drop out quick from any to <${TABLE_NAME}>
@@ -46,7 +46,7 @@ else
     cp "$PF_CONF" "${PF_CONF}.bak.$(date +%Y%m%d_%H%M%S)"
     cat >> "$PF_CONF" <<PFCONF
 
-# === MythoFable ===
+# === SecureGuard ===
 anchor "${ANCHOR_NAME}"
 load anchor "${ANCHOR_NAME}" from "${PF_ANCHOR_CONF}"
 PFCONF
