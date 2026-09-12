@@ -346,6 +346,56 @@ Respond with ONLY the Python code. No explanation. No markdown fences."""
         except Exception:
             pass
 
+# ── git連携 ──────────────────────────────────────
+
+def find_git_root(path):
+    """指定パスを含むgitリポジトリのルートを返す。リポジトリでなければNone"""
+    try:
+        r = subprocess.run(
+            ["git", "-C", os.path.dirname(path), "rev-parse", "--show-toplevel"],
+            capture_output=True, text=True, timeout=10
+        )
+        if r.returncode == 0:
+            return r.stdout.strip()
+    except Exception:
+        pass
+    return None
+
+def git_commit_and_push(filepath, message, timeout=30):
+    """
+    filepathを含むgitリポジトリでadd→commit→pushを行う。
+    gitリポジトリでない場合はエラー扱いせず skipped=True を返す。
+    target_repo/ 用: 自動適用パッチのロールバック証跡を残す目的。
+    """
+    repo_root = find_git_root(filepath)
+    if not repo_root:
+        return {"ok": False, "skipped": True, "reason": "gitリポジトリではありません"}
+
+    def run(args):
+        return subprocess.run(
+            ["git", "-C", repo_root] + args,
+            capture_output=True, text=True, timeout=timeout
+        )
+
+    add_r = run(["add", filepath])
+    if add_r.returncode != 0:
+        return {"ok": False, "skipped": False, "reason": f"git add失敗: {add_r.stderr.strip()}"}
+
+    status_r = run(["status", "--porcelain", filepath])
+    if not status_r.stdout.strip():
+        return {"ok": True, "skipped": True, "reason": "変更なし(コミット対象なし)"}
+
+    commit_r = run(["commit", "-m", message])
+    if commit_r.returncode != 0:
+        return {"ok": False, "skipped": False, "reason": f"git commit失敗: {commit_r.stderr.strip()}"}
+
+    push_r = run(["push"])
+    if push_r.returncode != 0:
+        return {"ok": False, "skipped": False, "reason": f"git push失敗（コミットは成功済み・要手動push）: {push_r.stderr.strip()}"}
+
+    return {"ok": True, "skipped": False, "reason": "commit+push成功"}
+
+
 def main():
 
     # target_repo/ 配下を全スキャン
@@ -369,6 +419,14 @@ def main():
                 names_str   = ", ".join(vuln_names)
                 if passed:
                     log(f"✅ パッチ適用+自己検証OK: {fname} → {names_str} | {detail[:80]}")
+                    commit_msg = f"security-patch: {fname} - {names_str}"
+                    git_result = git_commit_and_push(fpath, commit_msg)
+                    if git_result["skipped"]:
+                        log(f"ℹ️ git連携スキップ: {git_result['reason']}")
+                    elif git_result["ok"]:
+                        log(f"✅ git commit+push成功: {fname}")
+                    else:
+                        log(f"❌ git連携失敗: {git_result['reason']}")
                 else:
                     shutil.copy(fpath + ".pre_patch", fpath)
                     log(f"⚠️ 自己検証失敗→ロールバック: {fname} | {detail[:100]}")
