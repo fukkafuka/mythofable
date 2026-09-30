@@ -17,6 +17,7 @@ BLACKLIST_FILE     = os.path.join(BASE_DIR, "blocked_ips.txt")
 WHITELIST_FILE     = os.path.join(BASE_DIR, "whitelist.txt")
 WATCHER_LOG        = "/Users/fk/Logs/watcher_stdout.log"
 AGENT_REPORTS_FILE = os.path.join(BASE_DIR, "agent_reports.jsonl")  # ⑤ Agent reports
+REDTEAM_REPORTS_FILE = os.path.join(BASE_DIR, "redteam_reports.jsonl")  # redteam_probe.py出力
 
 SECRET_KEY = os.environ.get('FLASK_SECRET')
 if not SECRET_KEY:
@@ -135,6 +136,25 @@ def load_agent_reports(count=5):
                     except json.JSONDecodeError:
                         pass
         # 新しい順に返す
+        return list(reversed(reports[-count:]))
+    except Exception:
+        return []
+
+
+def load_redteam_reports(count=50):
+    """redteam_reports.jsonl(redteam_probe.py出力)から最新レポートを読み込む"""
+    if not os.path.exists(REDTEAM_REPORTS_FILE):
+        return []
+    reports = []
+    try:
+        with open(REDTEAM_REPORTS_FILE, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if line:
+                    try:
+                        reports.append(json.loads(line))
+                    except json.JSONDecodeError:
+                        pass
         return list(reversed(reports[-count:]))
     except Exception:
         return []
@@ -390,6 +410,7 @@ DASHBOARD_TEMPLATE = """<!DOCTYPE html>
     <div style="margin:4px 0 12px;display:flex;gap:8px;flex-wrap:wrap;">
         <a href="/reports" rel="noreferrer" class="health-link" style="border-color:#0ff;color:#0ff;">📊 統計レポート</a>
         <a href="/patches" rel="noreferrer" class="health-link" style="border-color:#fa0;color:#fa0;">🔧 パッチ候補</a>
+        <a href="/redteam" rel="noreferrer" class="health-link" style="border-color:#0f0;color:#0f0;">🎯 レッドチーム</a>
         <a href="/test_port" rel="noreferrer" class="health-link" style="border-color:#f0f;color:#f0f;">🔬 ポートテスト</a>
         <a href="/logs" rel="noreferrer" class="health-link" style="border-color:#fa0;color:#fa0;">🗂️ ログ管理</a>
         <a href="/services" rel="noreferrer" class="health-link" style="border-color:#0cf;color:#0cf;">⏸️ サービス管理</a>
@@ -898,8 +919,79 @@ PATCHES_TEMPLATE = """<!DOCTYPE html>
 
 
 # ─────────────────────────────────────────
-# ポートテスト画面テンプレート
+# レッドチーム検証結果画面テンプレート
 # ─────────────────────────────────────────
+REDTEAM_TEMPLATE = """<!DOCTYPE html>
+<html>
+<head>
+    <title>SecureGuard - レッドチーム検証</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+    <style>
+        body { background:#111; color:#ccc; font-family:monospace; padding:20px; max-width:960px; margin:0 auto; }
+        h1 { color:#0ff; font-size:20px; margin-bottom:6px; }
+        .desc { color:#888; font-size:12px; margin-bottom:16px; }
+        .back-btn { display:inline-block; margin-bottom:20px; padding:7px 16px; color:#0f0; border:1px solid #0f0; text-decoration:none; font-family:monospace; font-size:13px; border-radius:3px; }
+        .back-btn:hover { background:rgba(0,255,0,0.1); }
+        .sev-summary { display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap; }
+        .sev-badge { flex:1; min-width:80px; text-align:center; padding:8px 4px; border-radius:4px; font-size:12px; }
+        .sev-badge.high    { background:#1a0000; border:1px solid #f44; color:#f44; }
+        .sev-badge.medium  { background:#1a0f00; border:1px solid #fa0; color:#fa0; }
+        .sev-badge.low     { background:#001a1a; border:1px solid #0cf; color:#0cf; }
+        .sev-badge.info    { background:#0a0a0a; border:1px solid #555; color:#888; }
+        .card { background:#1a1a1a; border:1px solid #333; border-radius:6px; padding:12px 14px; margin-bottom:12px; }
+        .card.sev-border-high   { border-color:#f44; }
+        .card.sev-border-medium { border-color:#fa0; }
+        .r-header { display:flex; gap:8px; align-items:center; margin-bottom:6px; flex-wrap:wrap; }
+        .outcome  { font-weight:bold; font-size:12px; padding:2px 8px; border-radius:3px; }
+        .outcome.high   { color:#f44; border:1px solid #f44; }
+        .outcome.medium { color:#fa0; border:1px solid #fa0; }
+        .outcome.low    { color:#0cf; border:1px solid #0cf; }
+        .outcome.info   { color:#888; border:1px solid #555; }
+        .cat   { color:#0ff; font-size:12px; }
+        .r-time{ color:#666; font-size:11px; margin-left:auto; }
+        .r-body{ color:#aaa; font-size:13px; line-height:1.5; }
+        .r-trigger { color:#888; font-size:11px; margin-top:6px; white-space:pre-wrap; word-break:break-all; background:#111; border:1px solid #222; border-radius:4px; padding:6px 8px; }
+        .empty { color:#555; font-size:13px; padding:20px 0; }
+        .count { color:#666; font-size:12px; margin-bottom:16px; }
+    </style>
+</head>
+<body>
+    <a href="/admin" rel="noreferrer" class="back-btn">← ダッシュボードに戻る</a>
+    <h1>🎯 レッドチーム検証</h1>
+    <p class="desc">redteam_probe.pyが定期的に自律エージェントへ攻撃を試み、防御(deny-list・承認フロー等)が
+    実際に機能するか検証した結果です。BYPASSED/FALSE_POSITIVE相当は<a href="/patches" style="color:#fa0;">パッチ候補</a>にも出ます。</p>
+
+    <div class="sev-summary">
+        <div class="sev-badge high">🔴 BYPASSED<br>{{ counts.get('BYPASSED', 0) }}</div>
+        <div class="sev-badge medium">🟡 BLOCKED<br>{{ counts.get('BLOCKED', 0) }}</div>
+        <div class="sev-badge medium">🟡 FALSE_POSITIVE<br>{{ counts.get('FALSE_POSITIVE', 0) }}</div>
+        <div class="sev-badge low">🔵 承認待ち等<br>{{ counts.get('REQUIRES_APPROVAL', 0) + counts.get('COMMAND_PROPOSED', 0) }}</div>
+        <div class="sev-badge info">⚪ OK/NO_EFFECT<br>{{ counts.get('OK', 0) + counts.get('NO_EFFECT', 0) }}</div>
+    </div>
+
+    <div class="count">直近{{ reports|length }}件を表示</div>
+    <div style="max-height:600px;overflow-y:auto;padding-right:4px;">
+    {% if reports %}
+    {% for r in reports %}
+    <div class="card {% if r.severity == 'HIGH' %}sev-border-high{% elif r.severity == 'MEDIUM' %}sev-border-medium{% endif %}">
+        <div class="r-header">
+            <span class="outcome {{ r.severity|lower }}">{{ r.outcome }}</span>
+            <span class="cat">{{ r.target }} / {{ r.category }}</span>
+            <span class="r-time">{{ r.timestamp }}</span>
+        </div>
+        <div class="r-body">{{ r.summary }}</div>
+        {% if r.detail and r.detail.trigger %}
+        <div class="r-trigger">{{ r.detail.trigger }}</div>
+        {% endif %}
+    </div>
+    {% endfor %}
+    {% else %}
+    <p class="empty">検証結果なし（redteam_probe.pyの初回実行後に表示されます）</p>
+    {% endif %}
+    </div>
+</body>
+</html>"""
 TEST_PORT_TEMPLATE = """<!DOCTYPE html>
 <html>
 <head>
@@ -1340,6 +1432,17 @@ def reports_page():
     if client_ip in read_file_lines(BLACKLIST_FILE):
         return render_template_string(BLOCKED_TEMPLATE, ip=client_ip), 403
     return render_template_string(REPORTS_TEMPLATE, agent_reports=load_agent_reports(20))
+
+@app.route('/redteam')
+def redteam_page():
+    client_ip = get_client_ip()
+    if client_ip in read_file_lines(BLACKLIST_FILE):
+        return render_template_string(BLOCKED_TEMPLATE, ip=client_ip), 403
+    reports = load_redteam_reports(50)
+    counts = {}
+    for r in reports:
+        counts[r.get("outcome", "?")] = counts.get(r.get("outcome", "?"), 0) + 1
+    return render_template_string(REDTEAM_TEMPLATE, reports=reports, counts=counts)
 
 @app.route('/test_attack')
 def test_attack():
